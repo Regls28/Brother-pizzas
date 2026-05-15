@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brother Pizzas - Nuevo Pedido </title>
+    <style>
+        :root {
+            --red: #f3b415; --dark: #eb1b1b; --gray: #120202; --yellow: #F7C400; --white: #ffffff; --green: #25d366; --blue: #009ee3;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--white); margin: 0; padding-bottom: 100px; }
+        header { background: #000; padding: 25px; text-align: center; border-bottom: 4px solid var(--red); }
+        .info-header { font-size: 0.9rem; color: #e5dfdf; margin-top: 10px; line-height: 1.4; }
+        .container { max-width: 800px; margin: auto; padding: 15px; }
+        .card { background: var(--gray); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
+        .price-badge { background: var(--red); padding: 5px 12px; border-radius: 20px; font-weight: bold; float: right; }
+        .visual-box { display: grid; gap: 5px; margin: 15px 0; border: 2px solid #555; background: #000; min-height: 80px; }
+        .box-cell { border: 1px dashed #777; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--yellow); padding: 10px; text-align: center; font-weight: bold; }
+        .btn { background: var(--red); color: rgb(11, 1, 1); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
+        .btn-sel { background: transparent; border: 1px solid var(--red); color: var(--red); margin: 5px 0; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; }
+        .modal-content { background: var(--gray); max-width: 550px; margin: 30px auto; padding: 25px; border-radius: 15px; border: 1px solid var(--red); }
+        .grid-2x1 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .box-2x1 { border: 1px solid #444; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .payment-methods { display: flex; gap: 10px; margin: 15px 0; }
+        .pay-option { flex: 1; border: 1px solid #444; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+        .pay-option.active { border-color: var(--red); background: rgba(230, 57, 70, 0.1); }
+        .cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--red); padding: 15px; text-align: center; font-weight: bold; cursor: pointer; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        input, select { background: #222; color: white; border: 1px solid #444; border-radius: 5px; width: 96%; padding: 10px; margin: 5px; box-sizing: border-box; }
+        .cart-item-detail { background: #2a2a2a; padding: 10px; border-radius: 5px; margin-top: 5px; font-size: 0.85rem; border-left: 3px solid var(--yellow); }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="OMUT6527.PNG" alt="Logo" style="max-height: 180px;">
+    <div class="info-header">
+         Calle: Ahuehuetes Colonia: Lomas De San Sebastian.<br> Municipio Los Reyes La Paz, Méx.  <br>
+        <strong>Servicio: 12:00 PM - 10:00 PM</strong> 
+    </div>
+</header>
+
+<div class="container">
+    <!-- PRODUCTOS -->
+    <div class="card">
+       <p style="text-align:center;"><strong>Llevate 1 pizza Grande O Familiar.<br>con orilla rellena de queso y ajonjoli</strong></p>
+        <div class="grid-2x1">
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza Grande', 1, ['HAWAIANA', 'PEPPERONI'], 185,)">GRANDE $185</button>
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza Familiar', 1, ['HAWAIANA', 'PEPPERONI'], 225,)">FAMILIAR $225</button>
+        </div>
+    </div>
+
+     <div class="card">
+        <p style="text-align:center;"><strong>PAQUETE 1<br>2 Pizzas Grandes<br>Hawaiana Y Pepperoni</strong></p>
+        <div class="grid-2x1">
+            <button class="btn btn-sel" onclick="openPicker('2 Pizzas Grandes', 2, ['HAWAIANA', 'PEPPERONI'], 310, true)">GRANDE $310</button>
+            <button class="btn btn-sel" onclick="openPicker('2 Pizzas Familiares', 2, ['HAWAIANA', 'PEPPERONI'], 360, true)">FAMILIAR $360</button>
+        </div>
+    </div>
+
+     <div class="card">
+        <p style="text-align:center;"><strong>PAQUETE 2<br>2 Pizzas Grandes<br>Hawaiana Y Azteca</strong></p>
+        <div class="grid-2x1">
+            <button class="btn btn-sel" onclick="openPicker('2 Pizza Grande', 1, ['HAWAIANA', 'AZTECA'], 310, true)">GRANDE $310</button>
+            <button class="btn btn-sel" onclick="openPicker('2 Pizza Familiar', 1, ['HAWAIANA', 'AZTECA'], 360, true)">FAMILIAR $360</button>
+        </div>
+    </div> 
+
+    <div class="card">
+        <p style="text-align:center;"><strong>PAQUETE 3<br>3 Pizzas a Elegir Cualquier Especialidad</strong></p>
+        <div class="grid-2x1">
+            <button class="btn btn-sel" onclick="openPicker('3 Pizzas Grande', 3, 'ALL', 410, true)">GRANDE $410</button>
+            <button class="btn btn-sel" onclick="openPicker('3 Pizzas Familiar', 3, 'ALL', 500, true)">FAMILIAR $500</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><p style="text-align:center;"><strong>Pizza Rectangular<br>(MEGA)</strong></p></h3>
+        <span class="price-badge">$370</span>
+        <p style="text-align:center;">24 Rebanadas, orilla rellena de queso crema y ajonjolí <br> + Refresco 2 Lts</p>
+        <button class="btn" onclick="openPicker('Mega', 4, 'ALL', 370, true, 'RECT4')">Elegir 4 sabores</button>
+    </div> 
+
+    <div class="card">
+        <h3><p style="text-align:center;"><strong>Pizza Rectangular<br>(BARRA)</strong></p></h3>
+        <span class="price-badge">$240</span>
+         <p style="text-align:center;">12 Rebanadas, orilla rellena de queso crema y ajonjolí <br> + Refresco 2 Lts</p>
+        <button class="btn" onclick="openPicker('Barra', 2, 'ALL', 240, true, 'RECT')">Elegir 2 sabores</button>
+    </div>
+
+    <div class="card">
+        <h3><p style="text-align:center;"><strong>Pizza<br>(CRADRADA)</strong></p></h3>
+        <span class="price-badge">$310</span>
+         <p style="text-align:center;">16 Rebanadas, orilla rellena de queso crema y ajonjolí <br> + Refresco 2 Lts</p>
+        <button class="btn" onclick="openPicker('Cuadrada', 4, 'ALL', 310, true, 'CUADRA')">Elegir 4 sabores</button>
+    </div>
+
+     <div class="card">
+        <p style="text-align:center;"><strong>1 Pizza En Forma De Corazon<br> rebanadas, orilla rellena de queso crema y ajonjolí + 2 Refresco De Lata</strong></p>
+           <div class="grid-2x1">
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza De Corazon Grande', 1, 'ALL', 185,)">GRANDE $185</button>
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza De corazon Familiar', 1, 'ALL', 225,)">FAMILIAR $225</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="color:var(--yellow); text-align:center; margin:30px 0;">Especialidades al 2x1</h2>
+     <div class="grid-2x1">
+        <div class="box-2x1" onclick="openPicker('2x1 Chica', 2, 'ALL', 180)">
+            <strong>CHICA</strong><br>$180<br><span class="rebanadas">6 Rebanadas</span>
+        </div>
+        <div class="box-2x1" onclick="openPicker('2x1 Mediana', 2, 'ALL', 250)">
+            <strong>MEDIANA</strong><br>$250<br><span class="rebanadas">8 Rebanadas</span>
+        </div>
+        <div class="box-2x1" onclick="openPicker('2x1 Grande', 2, 'ALL', 320)">
+            <strong>GRANDE</strong><br>$320<br><span class="rebanadas">8 Rebanadas</span>
+        </div>
+        <div class="box-2x1" onclick="openPicker('2x1 Familiar', 2, 'ALL', 380, true)">
+            <strong>FAMILIAR</strong><br>$380<br><span class="rebanadas">12 Rebanadas + Refresco</span>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- SPAGHETTI AGREGADO -->
+    <div class="card" style="margin-top:20px;">
+    <span class="price-badge">$90</span>
+    <div style="text-align:center;">
+        <h3><strong>ESPAGUETTI</strong></h3>
+        <p>Orden para 2 personas</p>
+    </div>
+
+    <button class="btn btn-sel" onclick="addToCartDirect('Espaguetti Blanco', 90)">
+        <strong>ESPAGUETTI BLANCO:</strong><br>
+        <small>Crema, jamón, tocino y queso</small>
+    </button>
+
+    <button class="btn btn-sel" onclick="addToCartDirect('Espaguetti Gratinado', 90)">
+        <strong>ESPAGUETTI GRATINADO:</strong><br>
+        <small>Crema, salami, champiñón, tocino y queso</small>
+    </button>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+    <span class="price-badge">$110</span>
+    <div style="text-align:center;">
+        <h3><strong>PAPAS AL HORNO</strong></h3>
+        <p>Orden para 2 personas</p>
+    </div>
+        <button class="btn" onclick="openPicker('Papas Al Horno', 1, 'ALL', 110,)">Papas Al Horno $110</button>
+    </div>
+</div>
+
+<!-- MODAL DE SELECCIÓN -->
+<div id="pickerModal" class="modal">
+    <div class="modal-content">
+        <h2 id="pickerTitle"></h2>
+        <div id="visual-preview-modal" class="visual-box"></div>
+        <div id="refresco-area" style="display:none; background:#222; padding:10px; border-radius:8px; margin-bottom:10px;">
+            <p><strong>Refresco 2L:</strong></p>
+            <select id="sel-refresco" onchange="updateCocaExtra()">
+                <option value="Sabor">Sabor (Manzanita, Jarrito, etc.)</option>
+                <option value="Coca">Coca Cola (+ $15.00)</option>
+            </select>
+        </div>
+        <div id="flavorList" style="max-height:300px; overflow-y:auto; background:#000;"></div>
+        <button class="btn" style="background:var(--green);" onclick="confirmOrder()">AGREGAR AL CARRITO</button>
+        <button class="btn btn-sel" onclick="closeModal()">Cancelar</button>
+    </div>
+</div>
+
+ <!-- MODAL CARRITO FINAL -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <h2 style="border-bottom:2px solid var(--red);">Mi Carrito</h2>
+        <div id="cartItems"></div>
+        
+        <div style="margin-top:20px;">
+            <button class="btn" style="background:var(--blue);" onclick="getLocation()">📍 COMPARTIR MI UBICACIÓN GPS</button>
+            <p id="geo-status" style="font-size:0.75rem; color:var(--green); text-align:center;"></p>
+            
+            <input type="text" id="c-nombre" placeholder="Nombre completo">
+            <input type="text" id="c-tel" placeholder="Número de Teléfono">
+            <input type="text" id="c-dir" placeholder="Calle, Número y Entre Calles">
+            <input type="text" id="c-colonia" placeholder="Colonia">
+            <div class="grid-2x1">
+                <input type="text" id="c-zaguan" placeholder="Color Zaguán">
+                <input type="text" id="c-fachada" placeholder="Color Fachada">
+            </div>
+        </div>
+
+        <h3>Forma de Pago</h3>
+        <div class="payment-methods">
+            <div class="pay-option active" id="p-efe" onclick="setPay('Efectivo')">Efectivo</div>
+            <div class="pay-option" id="p-tra" onclick="setPay('Transferencia')">Transferencia</div>
+            <div class="pay-option" id="p-tar" onclick="setPay('Tarjeta')">Tarjeta (+4%)</div>
+        </div>
+
+        <div id="info-pago-extra" style="display:none; background:#000; padding:15px; border-radius:8px; border:1px solid var(--yellow); margin:10px 0;">
+            <p id="txt-pago-inst" style="font-size:0.85rem; margin:0;"></p>
+            <button id="btn-mp" class="btn" style="background:var(--blue); display:none;" onclick="window.open('http://link.mercadopago.com.mx/pizzacherry91', '_blank')">PAGAR AHORA</button>
+        </div>
+
+        <h2 id="total-final" style="text-align:right; color:var(--yellow); font-size:1.8rem;">Total: $0</h2>
+        <p style="font-size:0.7rem; text-align:center; color:#888;">* Al dar click en enviar, se abrirá tu WhatsApp. No olvides adjuntar tu captura si pagaste por banco.</p>
+        
+        <button class="btn" style="background:var(--green); height:60px; font-size:1.2rem;" onclick="sendWhatsApp()">🚀 ENVIAR PEDIDO</button>
+        <button class="btn btn-sel" onclick="closeCart()">Seguir Comprando</button>
+    </div>
+</div>
+
+
+<div class="cart-bar" onclick="openCart()">
+    <span>🛒 MI PEDIDO: <span id="cart-count">0</span></span>
+    <span id="cart-total">$0</span>
+</div>
+
+
+<script>
+    const especialidades = [
+       {n: 'AL PASTOR ESPECIAL', i: 'Carne al pastor, piña, cebolla, chipotle y queso'},
+       {n: 'AL PASTOR NORMAL', i: 'Jamón, piña, tocino, chorizo y queso'},
+       {n: 'MEXICANA ESPECIAL', i: 'Pierna, pollo, rajas, aguacate y queso'},
+       {n: 'MEXICANA NORMAL', i: 'Pierna, elote, pollo, pimiento verde y queso'},
+       {n: 'HAWAIANA', i: 'Jamón, piña y queso'},
+       {n: 'HAWAIANA INTER', i: 'Jamón, piña, cereza y queso'},
+       {n: 'HAWAIANA TRADICIONAL', i: 'Jamón, piña, tocino y queso'},
+       {n: 'AZTECA', i: 'Frijoles, rajas, chorizo, aguacate y queso'},
+       {n: 'CARNES FRÍAS', i: 'Pierna, salchicha, lomo, peperoni, tocino y queso'},
+       {n: 'CUBANA', i: 'Pierna, atún, tocino, rajas, jitomate, aguacate y queso'},
+       {n: 'VEGETARIANA', i: 'Champiñones, pimiento verde, cebolla, elote y queso'},
+       {n: 'CAMPESTRE', i: 'Pierna, salchicha, elote, champiñones y queso'},
+       {n: 'ORIENTAL', i: 'Champiñones, elote, pollo y queso'},
+       {n: 'COMBINADA', i: 'Champiñones, jamón, cebolla, salami, pimiento verde, chorizo y queso'},
+       {n: 'YUCATECA', i: 'Cochinita pibil, chipotle, cebolla y queso'},
+       {n: 'CLÁSICA', i: 'Champiñones, pimiento verde, peperoni y queso'},
+       {n: 'BBQ', i: 'Pechuga asada, tocino, cebolla, salsa BBQ y queso'},
+       {n: 'MAFIOSA', i: 'Champiñones, salami, tocino, rajas y queso'},
+       {n: 'BBQ COSTILLA', i: 'Queso, costillas de puerco y salsa BBQ'},
+       {n: 'PEPPERONI', i: 'Pepperoni'},
+    ];
+
+    let cart = [];
+    let current = null;
+    let selectedPay = 'Efectivo';
+    let userLocation = "No enviada";
+    const linkMP = "http://link.mercadopago.com.mx/pizzacherry91";
+
+    function openPicker(type, limit, allowed, price, hasRef = false) {
+        current = { type, limit, basePrice: price, price: price, flavors: [], refresco: 'Sabor', extra: 0, hasRef };
+        document.getElementById('pickerModal').style.display = 'block';
+        document.getElementById('pickerTitle').innerText = type;
+        document.getElementById('refresco-area').style.display = hasRef ? 'block' : 'none';
+        
+        const vBox = document.getElementById('visual-preview-modal');
+        vBox.style.gridTemplateColumns = `repeat(${limit}, 1fr)`;
+        vBox.innerHTML = '';
+        for(let i=0; i<limit; i++) vBox.innerHTML += `<div class="box-cell" id="s-${i}">Sabor ${i+1}</div>`;
+
+        const list = document.getElementById('flavorList');
+        list.innerHTML = '';
+        const pool = allowed === 'ALL' ? especialidades : especialidades.filter(e => allowed.includes(e.n));
+        pool.forEach(esp => {
+            list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <div><strong>${esp.n}</strong><br><small>${esp.i}</small></div>
+                <button class="btn" style="width:auto; margin:0;" onclick="selectFlavor('${esp.n}')">+</button>
+            </div>`;
+        });
+    }
+
+    function selectFlavor(n) {
+        if(current.flavors.length < current.limit) {
+            current.flavors.push(n);
+            document.getElementById(`s-${current.flavors.length-1}`).innerText = n;
+            document.getElementById(`s-${current.flavors.length-1}`).style.background = "#440000";
+        }
+    }
+
+    function addToCartDirect(name, price) {
+        cart.push({type: name, flavors: ['Orden Estándar'], price: price, extra: 0, hasRef: false});
+        updateStats();
+        alert(name + " agregado al carrito");
+    }
+
+    function updateCocaExtra() {
+        const val = document.getElementById('sel-refresco').value;
+        current.refresco = val;
+        current.extra = val === 'Coca' ? 15 : 0;
+        current.price = current.basePrice + current.extra;
+    }
+
+    function confirmOrder() {
+        if(current.flavors.length < current.limit) return alert("Elige todos los sabores");
+        cart.push({...current});
+        closeModal();
+        updateStats();
+    }
+
+    function updateStats() {
+        let total = cart.reduce((s, i) => s + i.price, 0);
+        document.getElementById('cart-count').innerText = cart.length;
+        document.getElementById('cart-total').innerText = "$" + total;
+    }
+
+    function setPay(m) {
+        selectedPay = m;
+        document.querySelectorAll('.pay-option').forEach(el => el.classList.remove('active'));
+        document.getElementById('p-' + m.substring(0,3).toLowerCase()).classList.add('active');
+        
+        const info = document.getElementById('info-pago-extra');
+        const txt = document.getElementById('txt-pago-inst');
+        const btnMp = document.getElementById('btn-mp');
+
+        info.style.display = (m === 'Efectivo') ? 'none' : 'block';
+        if(m === 'Transferencia') {
+            txt.innerHTML = "🏦 <strong>CLABE: 7229 6901 0212 7908 18 <br>🏦 STP (Pizza Cherry)</strong><br>Por favor enviar captura de tu pago.";
+            btnMp.style.display = 'none';
+        } else if(m === 'Tarjeta') {
+            txt.innerHTML = "💳 <strong>Pago con Tarjeta:</strong> No olvides enviar tu comprobante.";
+            btnMp.style.display = 'block';
+        }
+        calculateFinalTotal();
+    }
+
+    function calculateFinalTotal() { 
+        let total = cart.reduce((s, i) => s + i.price, 0);
+        if(selectedPay === 'Tarjeta') total *= 1.04;
+        document.getElementById('total-final').innerText = "Total: $" + Math.round(total);
+    }
+    function getLocation() {
+        navigator.geolocation.getCurrentPosition(p => {
+            userLocation = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+            document.getElementById('geo-status').innerText = "✅ Ubicación capturada";
+        });
+    }
+
+    function sendWhatsApp() {
+        const n = document.getElementById('c-nombre').value;
+        const d = document.getElementById('c-dir').value;
+        if(!n || !d) return alert("Faltan datos del cliente");
+
+        let msg = `*Brother Pizzas - PEDIDO*\n`;
+        msg += `Cliente: ${n}\nDir: ${d}\nCol: ${document.getElementById('c-colonia').value}\nZaguán: ${document.getElementById('c-zaguan').value} | Fachada: ${document.getElementById('c-fachada').value}\nGPS: ${userLocation}\n----------------\n`;
+        cart.forEach(i => {
+            msg += `• ${i.type}: ${i.flavors.join(' / ')} ${i.hasRef ? '(Ref: '+i.refresco+')' : ''}\n`;
+        });
+        msg += `----------------\nPago: ${selectedPay}\nTOTAL: ${document.getElementById('total-final').innerText}`;
+
+        if(selectedPay === 'Tarjeta') {
+            window.open(linkMP, '_blank');
+        } else if(selectedPay === 'Transferencia') {
+            msg += `\n*Nota:* Comprobante adjunto en mi galería.`;
+        }
+        
+        window.open(`https://wa.me/+525588183879?text=${encodeURIComponent(msg)}`);
+    }
+
+    function openCart() {
+        document.getElementById('cartModal').style.display = 'block';
+        const items = document.getElementById('cartItems');
+        items.innerHTML = '';
+        cart.forEach((i, idx) => {
+            items.innerHTML += `<div class="cart-item-detail"><strong>${i.type}</strong> - $${i.price}<br><small>${i.flavors.join(', ')}</small> <button onclick="cart.splice(${idx},1);openCart();updateStats();" style="color:red; background:none; border:none; float:right;">[X]</button></div>`;
+        });
+        calculateTotal();
+    }
+    function closeModal() { document.getElementById('pickerModal').style.display = 'none'; }
+    function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
+</script>
+</body>
+</html>
