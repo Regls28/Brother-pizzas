@@ -161,7 +161,7 @@
             <p><strong>Refresco 2L:</strong></p>
             <select id="sel-refresco" onchange="updateCocaExtra()">
                 <option value="Sabor">Sabor (Manzanita, Jarrito, etc.)</option>
-                <option value="Coca">Coca Cola (+ $15.00)</option>
+                <option value="Coca">Coca Cola (+ $20.00)</option>
             </select>
         </div>
         <div id="flavorList" style="max-height:300px; overflow-y:auto; background:#000;"></div>
@@ -286,7 +286,7 @@
     function updateCocaExtra() {
         const val = document.getElementById('sel-refresco').value;
         current.refresco = val;
-        current.extra = val === 'Coca' ? 15 : 0;
+        current.extra = val === 'Coca' ? 20 : 0;
         current.price = current.basePrice + current.extra;
     }
 
