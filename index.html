@@ -442,7 +442,7 @@ function recalcTotal(){
     let extras=cur.cocaExtra, parts=[];
     slots.forEach((sl,i)=>{
         const lbl = cur.limit>1?`P${i+1}: `:'';
-        if(sl.mitad)  { extras+=10; parts.push(`${lbl}Mitad +$10`); }
+        if(sl.mitad)  { extras+=0; parts.push(`${lbl}Mitad +$0`); }
         if(sl.orilla) { extras+=op; parts.push(`${lbl}Orilla +$${op}`); }
     });
     const total = cur.basePrice+extras;
