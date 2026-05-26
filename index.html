@@ -81,8 +81,8 @@
     <div class="card">
         <p style="text-align:center;"><strong>Llevate 1 pizza Grande O Familiar.<br>con orilla rellena de queso y ajonjoli</strong></p>
         <div class="grid-2x1">
-            <button class="btn btn-sel" onclick="openPicker('1 Pizza Grande con orilla rellena', 1, ['HAWAIANA','PEPPERONI'], 185, false, '', 'grande')">GRANDE $185</button>
-            <button class="btn btn-sel" onclick="openPicker('1 Pizza Familiar con orilla rellena', 1, ['HAWAIANA','PEPPERONI'], 225, false, '', 'familiar')">FAMILIAR $225</button>
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza Grande con orilla rellena', 1, ['HAWAIANA','PEPPERONI'], 185, false, '', 'grande', true)">GRANDE $185</button>
+            <button class="btn btn-sel" onclick="openPicker('1 Pizza Familiar con orilla rellena', 1, ['HAWAIANA','PEPPERONI'], 225, false, '', 'familiar', true)">FAMILIAR $225</button>
         </div>
     </div>
 
@@ -170,7 +170,7 @@
             <h3><strong>PAPAS AL HORNO</strong></h3>
             <p>Orden para 2 personas<br>van preparadas con los mismos ingredientes de las pizzas</p>
         </div>
-        <button class="btn" onclick="openPicker('Papas Al Horno', 1, 'ALL', 110, false, '', '')">Elige Tu Favorita</button>
+        <button class="btn" onclick="openPicker('Papas Al Horno', 1, 'ALL', 110, false, '', '', false, true)">Elige Tu Favorita</button>
     </div>
 
 </div>
@@ -233,7 +233,8 @@
         <p id="geo-status" style="font-size:0.75rem; color:var(--green); text-align:center;"></p>
         <input type="text" id="c-nombre"  placeholder="Nombre completo">
         <input type="text" id="c-tel"     placeholder="Número de Teléfono">
-        <input type="text" id="c-dir"     placeholder="Calle, Número y Entre Calles">
+        <input type="text" id="c-dir"     placeholder="Calle, Número">
+        <input type="text" id="c-colonia" placeholder="Entre que calles">
         <input type="text" id="c-colonia" placeholder="Colonia">
         <div class="grid-2x1">
             <input type="text" id="c-zaguan"  placeholder="Color Zaguán">
@@ -293,17 +294,20 @@ let cart=[], selectedPay='Efectivo', userLocation="No enviada";
 const linkMP="http://link.mercadopago.com.mx/pizzacherry91";
 
 // Estado picker normal
+// orilla: 'none' | 'crema' | 'mozz'
 let cur=null, slots=[], activePizza=-1, activeHalf=1;
 // Estado picker rect
 let cur2=null;
 
 // ── PICKER NORMAL ─────────────────────────────
-function openPicker(type, limit, allowed, price, hasRef=false, rectMode='', size=''){
+// freeOrilla: true = Paquete 1 (orilla ya incluida, sin costo)
+// noExtras:   true = Papas al horno (sin checkboxes)
+function openPicker(type, limit, allowed, price, hasRef=false, rectMode='', size='', freeOrilla=false, noExtras=false){
     cur = {type, limit, basePrice:price, hasRef, size, allowed,
-           refresco:'Sabor', cocaExtra:0};
+           refresco:'Sabor', cocaExtra:0, freeOrilla, noExtras};
     slots = [];
-    for(let i=0;i<limit;i++) slots.push({sabor1:'',sabor2:'',mitad:false,orilla:false});
-    activePizza=-1; activeHalf=1;
+    for(let i=0;i<limit;i++) slots.push({sabor1:'', sabor2:'', mitad:false, orilla:'none'});
+    activePizza=0; activeHalf=1;
 
     document.getElementById('pickerTitle').innerText = type;
     document.getElementById('refresco-area').style.display = hasRef?'block':'none';
@@ -315,20 +319,21 @@ function openPicker(type, limit, allowed, price, hasRef=false, rectMode='', size
 }
 
 function renderVisor(){
-    const vBox = document.getElementById('visual-preview-modal');
+    const vBox   = document.getElementById('visual-preview-modal');
     const extRow = document.getElementById('extras-row');
-    const op = ORILLA[cur.size]||0;
-    const showExtras = cur.size !== '';  // Papas no tiene orilla
+    const op     = ORILLA[cur.size]||0;
+    const showExtras  = !cur.noExtras && cur.size !== '';
+    const freeOrilla  = cur.freeOrilla;
 
-    vBox.style.gridTemplateColumns = `repeat(${cur.limit},1fr)`;
-    vBox.innerHTML = '';
+    vBox.style.gridTemplateColumns  = `repeat(${cur.limit},1fr)`;
     extRow.style.gridTemplateColumns = `repeat(${cur.limit},1fr)`;
+    vBox.innerHTML = '';
     extRow.innerHTML = '';
 
     slots.forEach((sl,i)=>{
-        // Celda circular
+        // ── celda circular ──
         const cell = document.createElement('div');
-        cell.className = 'box-cell' + (sl.sabor1?' selected':'');
+        cell.className = 'box-cell'+(sl.sabor1?' selected':'');
         cell.id = 'vcell-'+i;
 
         if(sl.mitad){
@@ -336,40 +341,52 @@ function renderVisor(){
             cell.innerHTML = `
                 <div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;
                     border-bottom:1px dashed #666;font-size:0.62rem;padding:2px;cursor:pointer;
-                    color:${sl.sabor1?'#fff':'var(--yellow)'};"
-                    onclick="startPicking(${i},1)">
+                    color:${sl.sabor1?'#fff':'var(--yellow)'};" onclick="startPicking(${i},1)">
                     ${sl.sabor1?'½ '+sl.sabor1:'½ S1'}
                 </div>
                 <div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;
                     font-size:0.62rem;padding:2px;cursor:pointer;
-                    color:${sl.sabor2?'#fff':'#888'};"
-                    onclick="startPicking(${i},2)">
+                    color:${sl.sabor2?'#fff':'#888'};" onclick="startPicking(${i},2)">
                     ${sl.sabor2?'½ '+sl.sabor2:'½ S2'}
                 </div>`;
         } else {
             cell.style.fontSize = sl.sabor1?'0.68rem':'0.72rem';
-            cell.innerText = sl.sabor1 || ('Sabor '+(i+1));
+            cell.innerText = sl.sabor1||('Sabor '+(i+1));
             cell.onclick = ()=>startPicking(i,1);
         }
 
-        if(activePizza===i) cell.style.outline = '2px solid var(--yellow)';
+        if(activePizza===i) cell.style.outline='2px solid var(--yellow)';
         vBox.appendChild(cell);
 
-        // Checkboxes debajo
+        // ── checkboxes: mitad + dos orillas (oculto si noExtras=papas) ──
         const col = document.createElement('div');
         col.className = 'extras-col';
-        col.innerHTML = `
-            <div class="chk-row">
-                <input type="checkbox" id="chk-m-${i}" ${sl.mitad?'checked':''} onchange="toggleMitad(${i})">
-                <label for="chk-m-${i}">Mitad y mitad</label>
-                <span class="chk-price">+$0</span>
-            </div>` +
-            (showExtras ? `
-            <div class="chk-row">
-                <input type="checkbox" id="chk-o-${i}" ${sl.orilla?'checked':''} onchange="toggleOrilla(${i})">
-                <label for="chk-o-${i}">Orilla de queso</label>
-                <span class="chk-price">+$${op}</span>
-            </div>` : '');
+
+        if(showExtras){
+            const precioLabel = freeOrilla
+                ? '<span class="chk-price" style="color:#888;">Incluida</span>'
+                : `<span class="chk-price">+$${op}</span>`;
+
+            col.innerHTML = `
+                <div class="chk-row">
+                    <input type="checkbox" id="chk-m-${i}" ${sl.mitad?'checked':''} onchange="toggleMitad(${i})"
+                        style="width:16px;height:16px;margin:0;flex-shrink:0;accent-color:var(--red);cursor:pointer;">
+                    <label for="chk-m-${i}">Mitad y mitad</label>
+                    <span class="chk-price">+$0</span>
+                </div>
+                <div class="chk-row" style="cursor:pointer;" onclick="setOrilla(${i}, slots[${i}].orilla==='crema' ? 'none' : 'crema')">
+                    <span style="width:16px;height:16px;border-radius:50%;border:2px solid ${sl.orilla==='crema'?'var(--red)':'#666'};
+                        background:${sl.orilla==='crema'?'var(--red)':'transparent'};flex-shrink:0;display:inline-block;"></span>
+                    <span style="color:${sl.orilla==='crema'?'#fff':'#ccc'};">Orilla queso crema</span>
+                    ${precioLabel}
+                </div>
+                <div class="chk-row" style="cursor:pointer;" onclick="setOrilla(${i}, slots[${i}].orilla==='mozz' ? 'none' : 'mozz')">
+                    <span style="width:16px;height:16px;border-radius:50%;border:2px solid ${sl.orilla==='mozz'?'var(--red)':'#666'};
+                        background:${sl.orilla==='mozz'?'var(--red)':'transparent'};flex-shrink:0;display:inline-block;"></span>
+                    <span style="color:${sl.orilla==='mozz'?'#fff':'#ccc'};">Orilla mozzarella</span>
+                    ${precioLabel}
+                </div>`;
+        }
         extRow.appendChild(col);
     });
 
@@ -377,7 +394,7 @@ function renderVisor(){
     recalcTotal();
 }
 
-function startPicking(idx, half){
+function startPicking(idx, half=1){
     activePizza=idx; activeHalf=half;
     renderVisor(); renderFlavorList();
 }
@@ -387,8 +404,8 @@ function updatePickingLabel(){
     if(activePizza<0){ lbl.style.display='none'; return; }
     const pLabel = cur.limit>1?`Pizza ${activePizza+1}`:'Pizza';
     const hLabel = slots[activePizza].mitad?(activeHalf===1?' — ½ Sabor 1':' — ½ Sabor 2'):'';
-    lbl.innerText = `Eligiendo: ${pLabel}${hLabel} — toca un sabor de la lista`;
-    lbl.style.display = 'block';
+    lbl.innerText = `Eligiendo: ${pLabel}${hLabel} — Elige un sabor de la lista`;
+    lbl.style.display='block';
 }
 
 function toggleMitad(i){
@@ -398,41 +415,34 @@ function toggleMitad(i){
     renderVisor(); renderFlavorList();
 }
 
-function toggleOrilla(i){
-    slots[i].orilla = document.getElementById(`chk-o-${i}`).checked;
-    recalcTotal();
+function setOrilla(i, val){
+    slots[i].orilla = val;
+    renderVisor();
 }
 
 function renderFlavorList(){
     const list = document.getElementById('flavorList');
-    if(activePizza<0){
-        list.innerHTML = '<p style="color:#666;text-align:center;padding:15px;font-size:0.85rem;">👆 Toca una celda para elegir su sabor</p>';
-        return;
-    }
     const pool = cur.allowed==='ALL' ? especialidades : especialidades.filter(e=>cur.allowed.includes(e.n));
-    list.innerHTML = '';
+    list.innerHTML='';
     pool.forEach(e=>{
-        const div = document.createElement('div');
-        div.className = 'flavor-item';
-        div.innerHTML = `<div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>
+        const div=document.createElement('div');
+        div.className='flavor-item';
+        div.innerHTML=`<div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>
             <button class="flavor-btn" onclick="selectFlavor('${e.n}')">+</button>`;
         list.appendChild(div);
     });
 }
 
 function selectFlavor(nombre){
-    if(activePizza<0) return;
+    if(activePizza<0) activePizza=0;
     if(activeHalf===1) slots[activePizza].sabor1=nombre;
     else               slots[activePizza].sabor2=nombre;
-
-    // Avanzar al siguiente pendiente
     let found=false;
     for(let i=0;i<cur.limit;i++){
         if(!slots[i].sabor1){ activePizza=i; activeHalf=1; found=true; break; }
         if(slots[i].mitad&&!slots[i].sabor2){ activePizza=i; activeHalf=2; found=true; break; }
     }
-    if(!found) activePizza=-1;
-
+    if(!found) activePizza=0;
     renderVisor(); renderFlavorList();
 }
 
@@ -441,13 +451,19 @@ function recalcTotal(){
     const op = ORILLA[cur.size]||0;
     let extras=cur.cocaExtra, parts=[];
     slots.forEach((sl,i)=>{
-        const lbl = cur.limit>1?`P${i+1}: `:'';
-        if(sl.mitad)  { extras+=0; parts.push(`${lbl}Mitad +$0`); }
-        if(sl.orilla) { extras+=op; parts.push(`${lbl}Orilla +$${op}`); }
+        const lbl=cur.limit>1?`P${i+1}: `:'';
+        if(sl.mitad){ extras+=0; parts.push(`${lbl}Mitad +$0`); }
+        if(!cur.freeOrilla && sl.orilla!=='none'){
+            const tipo = sl.orilla==='mozz'?'Mozz':'Crema';
+            extras+=op; parts.push(`${lbl}Orilla ${tipo} +$${op}`);
+        } else if(cur.freeOrilla && sl.orilla!=='none'){
+            const tipo = sl.orilla==='mozz'?'Mozzarella':'Queso crema';
+            parts.push(`${lbl}Orilla ${tipo} (incluida)`);
+        }
     });
-    const total = cur.basePrice+extras;
+    const total=cur.basePrice+extras;
     document.getElementById('p-total').innerText =
-        parts.length ? `Extras: ${parts.join(' | ')}  →  Total: $${total}` : `Total: $${total}`;
+        parts.length?`${parts.join(' | ')}  →  Total: $${total}`:`Total: $${total}`;
 }
 
 function updateCocaExtra(){
@@ -457,17 +473,23 @@ function updateCocaExtra(){
 }
 
 function confirmOrder(){
-    const op = ORILLA[cur.size]||0;
+    const op=ORILLA[cur.size]||0;
     for(let i=0;i<cur.limit;i++){
         if(!slots[i].sabor1){ alert(`Elige el sabor de la Pizza ${i+1}`); return; }
         if(slots[i].mitad&&!slots[i].sabor2){ alert(`Elige el 2do sabor (mitad) de la Pizza ${i+1}`); return; }
     }
     let flavors=[], extras=cur.cocaExtra;
     slots.forEach((sl,i)=>{
-        const lbl = cur.limit>1?`Pizza ${i+1}: `:'';
-        let desc = lbl+(sl.mitad?`${sl.sabor1} / ${sl.sabor2} (½ y ½)`:sl.sabor1);
-        if(sl.orilla){ desc+=' + Orilla de queso'; extras+=op; }
-        if(sl.mitad) extras+=10;
+        const lbl=cur.limit>1?`Pizza ${i+1}: `:'';
+        let desc=lbl+(sl.mitad?`${sl.sabor1} 1/2 ${sl.sabor2}`:sl.sabor1);
+        if(sl.mitad) extras+=0;
+        if(sl.orilla==='crema'){
+            desc+=' + Orilla queso crema';
+            if(!cur.freeOrilla) extras+=op;
+        } else if(sl.orilla==='mozz'){
+            desc+=' + Orilla mozzarella';
+            if(!cur.freeOrilla) extras+=op;
+        }
         flavors.push(desc);
     });
     cart.push({type:cur.type, flavors, price:cur.basePrice+extras, hasRef:cur.hasRef, refresco:cur.refresco});
