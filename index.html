@@ -61,7 +61,7 @@
         .btn { background: var(--red); color: rgb(11,1,1); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
         .btn-sel { background: transparent; border: 1px solid var(--red); color: var(--red); margin: 5px 0; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; }
-        .modal-content { background: var(--gray); max-width: 550px; margin: 30px auto; padding: 25px; border-radius: 15px; border: 1px solid var(--red); }
+        .modal-content { background: var(--gray); max-width: 550px; margin: 30px auto; padding: 25px; border-radius: 15px; border: 1px solid var(--red); box-sizing: border-box; overflow-x: hidden; }
         .grid-2x1 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .box-2x1 { border: 1px solid #444; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
         .payment-methods { display: flex; gap: 10px; margin: 15px 0; }
@@ -73,10 +73,19 @@
 
         /* Checkboxes por pizza */
         .extras-row { display: grid; gap: 8px; margin-top: 4px; }
-        .extras-col { border: 1px solid #333; border-radius: 8px; padding: 8px; background: #1a0000; }
-        .chk-row { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; padding: 3px 0; }
+        .extras-row { min-width: 0; }
+        .extras-col { border: 1px solid #333; border-radius: 8px; padding: 6px; background: #1a0000; min-width: 0; }
+        .chk-row { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; padding: 3px 0; flex-wrap: wrap; row-gap: 2px; min-width: 0; }
         .chk-row input[type=checkbox] { width: 16px; height: 16px; margin: 0; padding: 0; flex-shrink: 0; accent-color: var(--red); cursor: pointer; }
-        .chk-price { color: var(--yellow); font-size: 0.7rem; margin-left: auto; white-space: nowrap; }
+        .chk-row label, .chk-row > span:not(.chk-price) { min-width: 0; overflow-wrap: break-word; }
+        .chk-price { color: var(--yellow); font-size: 0.7rem; margin-left: auto; white-space: normal; }
+
+        @media (max-width: 480px) {
+            .modal-content { padding: 15px; margin: 15px auto; }
+            .extras-col { font-size: 0.68rem; padding: 5px; }
+            .chk-row { font-size: 0.68rem; gap: 3px; }
+            #visual-preview-modal .box-cell { width: 68px; height: 68px; font-size: 0.6rem; }
+        }
 
         /* Etiqueta de qué pizza se elige */
         .picking-label { background: #2a0000; color: var(--yellow); font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; text-align: center; margin: 6px 0; display: none; }
@@ -367,8 +376,8 @@ function renderVisor(){
     const showExtras  = !cur.noExtras && cur.size !== '';
     const freeOrilla  = cur.freeOrilla;
 
-    vBox.style.gridTemplateColumns  = `repeat(${cur.limit},1fr)`;
-    extRow.style.gridTemplateColumns = `repeat(${cur.limit},1fr)`;
+    vBox.style.gridTemplateColumns  = `repeat(${cur.limit}, minmax(0,1fr))`;
+    extRow.style.gridTemplateColumns = `repeat(${cur.limit}, minmax(0,1fr))`;
     vBox.innerHTML = '';
     extRow.innerHTML = '';
 
@@ -568,7 +577,7 @@ function openPickerRect(type, limit, price, hasRef, category='', shape='rect'){
     vBox.classList.toggle('rect-outer', shape==='rect');
     vBox.classList.toggle('square-outer', shape==='square');
     // Todas las formas (excepto corazón con 1 pizza) usan 2 columnas → cuadrícula 2x2
-    vBox.style.gridTemplateColumns = `repeat(${shape==='heart' ? Math.min(limit,2) : 2},1fr)`;
+    vBox.style.gridTemplateColumns = `repeat(${shape==='heart' ? Math.min(limit,2) : 2}, minmax(0,1fr))`;
     vBox.innerHTML='';
     for(let i=0;i<limit;i++) vBox.innerHTML+=`<div class="box-cell shape-${shape}" id="rv-${i}">Sabor ${i+1}</div>`;
 
