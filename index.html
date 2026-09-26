@@ -17,7 +17,25 @@
 
         /* Visor rect (original) */
         .visual-box { display: grid; gap: 5px; margin: 15px 0; border: 2px solid #555; background: #000; min-height: 80px; }
-        .box-cell { border: 1px dashed #777; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--yellow); padding: 10px; text-align: center; font-weight: bold; }
+        .box-cell { border: 1px dashed #777; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--yellow); padding: 10px; text-align: center; font-weight: bold; word-break: break-word; overflow-wrap: break-word; line-height: 1.15; overflow: hidden; }
+
+        /* Formas de los selectores en el modal RECT según el producto */
+        .shape-rect   { border-radius: 8px; aspect-ratio: 1.5/1; }
+
+        /* La Mega/Barra se ve como UN solo rectángulo grande dividido en secciones,
+           en vez de piezas sueltas con esquinas redondeadas */
+        .visual-box.rect-outer { aspect-ratio: 2.2/1; min-height: unset; gap: 2px; padding: 0; }
+        .visual-box.rect-outer .box-cell.shape-rect { aspect-ratio: unset; border-radius: 0; border: 1px dashed #555; }
+        .visual-box.square-outer { aspect-ratio: 1/1; min-height: unset; gap: 2px; padding: 0; max-width: 260px; margin: 15px auto; }
+        .visual-box.square-outer .box-cell.shape-square { aspect-ratio: unset; border-radius: 0; border: 1px dashed #555; max-width: unset; margin: 0; }
+        .shape-heart  {
+            border: none;
+            background: #1a0000;
+            aspect-ratio: 1/0.92;
+            padding: 16px 10px 6px;
+            clip-path: polygon(50% 15%,61% 2%,75% 0%,85% 4%,95% 15%,100% 30%,95% 45%,50% 92%,5% 45%,0% 30%,5% 15%,15% 4%,25% 0%,39% 2%);
+        }
+        .shape-heart.selected { background: #440000; }
 
         /* Visor redondo SOLO modal normal */
         #visual-preview-modal { border: none; background: transparent; padding: 4px; gap: 8px; margin: 12px 0; }
@@ -33,6 +51,9 @@
             flex-direction: column;
             cursor: pointer;
             transition: background 0.2s;
+            overflow: hidden;
+            word-break: break-word;
+            line-height: 1.05;
         }
         #visual-preview-modal .box-cell:hover { background: #1a0000; }
         #visual-preview-modal .box-cell.selected { background: #3a0000; border-color: var(--red); border-style: solid; color: #fff; }
@@ -60,8 +81,12 @@
         /* Etiqueta de qué pizza se elige */
         .picking-label { background: #2a0000; color: var(--yellow); font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; text-align: center; margin: 6px 0; display: none; }
 
+        /* Subtítulo de categoría (rectangulares / cuadrada / corazón) */
+        .picker-subtitle { color: var(--yellow); font-size: 0.8rem; text-align: center; margin: -6px 0 12px; opacity: 0.85; letter-spacing: 0.5px; font-weight: bold; }
+
         /* Sabores lista */
-        .flavor-item { padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .flavor-item { padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .flavor-item > div { min-width: 0; word-break: break-word; overflow-wrap: break-word; }
         .flavor-btn { background: var(--yellow); color: #000; border: none; width: 42px; height: 42px; border-radius: 10px; font-size: 1.3rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
     </style>
 </head>
@@ -90,16 +115,16 @@
     <div class="card">
         <p style="text-align:center;"><strong>PAQUETE 1<br>2 Pizzas Grandes<br>Hawaianas</strong></p>
         <div class="grid-2x1">
-            <button class="btn btn-sel" onclick="openPicker('2 PIZZAS GRANDES', 1, ['HAWAIANA'], 340, true, '', 'grande')">GRANDE $340</button>
-            <button class="btn btn-sel" onclick="openPicker('2 PIZZAS FAMILIARES', 1, ['HAWAIANA'], 400, true, '', 'familiar')">FAMILIAR $400</button>
+            <button class="btn btn-sel" onclick="openPicker('2 PIZZAS GRANDES', 2, ['HAWAIANA'], 340, true, '', 'grande')">GRANDE $340</button>
+            <button class="btn btn-sel" onclick="openPicker('2 PIZZAS FAMILIARES', 2, ['HAWAIANA'], 400, true, '', 'familiar')">FAMILIAR $400</button>
         </div>
     </div>
 
     <div class="card">
         <p style="text-align:center;"><strong>PAQUETE 2<br>1 HAWAIANA, 1 PEPERONI Y PASTOR NORMAL </strong></p>
         <div class="grid-2x1">
-            <button class="btn btn-sel" onclick="openPicker('3 PIZZAS GRANDES', 3,  ['HAWAIANA','PEPERONI','PASTOR NORMAL'], 430, true, '', 'grande')">GRANDE $430</button>
-            <button class="btn btn-sel" onclick="openPicker('3 PIZZAS FAMILIARES', 3,  ['HAWAIANA','PEPERONI','PASTOR NORMAL'], 510, true, '', 'familiar')">FAMILIAR $510</button>
+            <button class="btn btn-sel" onclick="openPicker('3 PIZZAS GRANDES', 3,  ['HAWAIANA','PEPPERONI','AL PASTOR NORMAL'], 430, true, '', 'grande')">GRANDE $430</button>
+            <button class="btn btn-sel" onclick="openPicker('3 PIZZAS FAMILIARES', 3,  ['HAWAIANA','PEPPERONI','AL PASTOR NORMAL'], 510, true, '', 'familiar')">FAMILIAR $510</button>
         </div>
     </div>
 
@@ -116,39 +141,43 @@
         <h3><p style="text-align:center;"><strong>PIZZA MEGA</strong><span class="price-badge">$400</span></p></h3>
         <img src="images/Pizza Rectangular.png" style="width:100%; border-radius:10px; margin:10px 0; object-fit:contain; max-height:250px; background:#000;">
         <p style="text-align:center;">24 Rebanadas, orilla rellena de queso crema y ajonjolí<br>+ Refresco 2 Lts</p>
-        <button class="btn" onclick="openPickerRect('PIZZA MEGA', 4, 400, true)">Elegir 4 sabores</button>
+        <button class="btn" onclick="openPickerRect('PIZZA MEGA', 4, 400, true, 'RECTANGULAR · 4 SABORES', 'rect')">Elegir 4 sabores</button>
     </div>
 
     <div class="card">
         <h3><p style="text-align:center;"><strong>PIZZA BARRA</strong><span class="price-badge">$260</span></p></h3>
         <img src="images/658B914F-D73A-4A51-B218-ABC60BAD89C3.png" style="width:100%; border-radius:10px; margin:10px 0; object-fit:contain; max-height:250px; background:#000;">
         <p style="text-align:center;">12 Rebanadas, orilla rellena de queso crema y ajonjolí<br>+ Refresco 2 Lts</p>
-        <button class="btn" onclick="openPickerRect('PIZZA BARRA', 2, 260, true)">Elegir 2 sabores</button>
+        <button class="btn" onclick="openPickerRect('PIZZA BARRA', 2, 260, true, 'RECTANGULAR · 2 SABORES', 'rect')">Elegir 2 sabores</button>
     </div>
 
     <div class="card">
         <h3><p style="text-align:center;"><strong>PIZZA CUADRADA</strong><span class="price-badge">$350</span></p></h3>
         <p style="text-align:center;">16 Rebanadas, orilla rellena de queso crema y ajonjolí<br>+ Refresco 2 Lts</p>
-        <button class="btn" onclick="openPickerRect('CUADRADA', 4, 350, true)">Elegir 4 sabores</button>
+        <button class="btn" onclick="openPickerRect('CUADRADA', 4, 350, true, 'CUADRADA · 4 SABORES', 'square')">Elegir 4 sabores</button>
     </div>
 
     <div class="card">
         <p style="text-align:center;"><strong>1 Pizza En Forma De Corazon<br>orilla rellena de queso crema y ajonjolí + 2 Refresco De Lata</strong></p>
         <img src="images/IMG_0343.png" style="width:100%; border-radius:10px; margin:10px 0; object-fit:contain; max-height:250px; background:#000;">
         <div class="grid-2x1">
-            <button class="btn btn-sel" onclick="openPickerRect('1 Pizza De Corazon Grande', 1, 200, false)">GRANDE $200</button>
-            <button class="btn btn-sel" onclick="openPickerRect('1 Pizza De Corazon Familiar', 1, 245, false)">FAMILIAR $245</button>
+            <button class="btn btn-sel" onclick="openPickerRect('1 Pizza De Corazon Grande', 1, 200, false, 'CORAZÓN · 1 PIZZA', 'heart')">GRANDE $200</button>
+            <button class="btn btn-sel" onclick="openPickerRect('1 Pizza De Corazon Familiar', 1, 245, false, 'CORAZÓN · 1 PIZZA', 'heart')">FAMILIAR $245</button>
         </div>
     </div>
 
     <div class="card">
         <h2 style="color:var(--yellow); text-align:center; margin:30px 0;">Especialidades al 2x1</h2>
         <div class="grid-2x1">
-            <div class="box-2x1" onclick="openPicker('2x1 CHICA',   2,'ALL',200,false,'','chica')"><strong>CHICA</strong><br>$200<br><span>6 Rebanadas</span></div>
-            <div class="box-2x1" onclick="openPicker('2x1 MEDIANA', 2,'ALL',270,false,'','mediana')"><strong>MEDIANA</strong><br>$270<br><span>8 Rebanadas</span></div>
-            <div class="box-2x1" onclick="openPicker('2x1 GRANDE',  2,'ALL',350,false,'','grande')"><strong>GRANDE</strong><br>$350<br><span>8 Rebanadas</span></div>
-            <div class="box-2x1" onclick="openPicker('2x1 FAMILIAR',2,'ALL',420,true,'','familiar')"><strong>FAMILIAR</strong><br>$420<br><span>12 Rebanadas + Refresco</span></div>
+            <div class="box-2x1" onclick="openPicker('2x1 CHICA',   2,'ALL',200,false,'','chica',false,false,true)"><strong>CHICA</strong><br>$200<br><span>6 Rebanadas</span></div>
+            <div class="box-2x1" onclick="openPicker('2x1 MEDIANA', 2,'ALL',270,false,'','mediana',false,false,true)"><strong>MEDIANA</strong><br>$270<br><span>8 Rebanadas</span></div>
+            <div class="box-2x1" onclick="openPicker('2x1 GRANDE',  2,'ALL',350,false,'','grande',false,false,true)"><strong>GRANDE</strong><br>$350<br><span>8 Rebanadas</span></div>
+            <div class="box-2x1" onclick="openPicker('2x1 FAMILIAR',2,'ALL',420,true,'','familiar',false,false,true)"><strong>FAMILIAR</strong><br>$420<br><span>12 Rebanadas + Refresco</span></div>
         </div>
+        <p style="font-size:0.72rem; color:#ddd; text-align:center; margin-top:10px;">
+            * Marinera Especial y Tropical solo disponibles en 2x1. Si eliges alguna, el precio cambia a:
+            Chica $300 · Mediana $350 · Grande $450 · Familiar $500.
+        </p>
     </div>
 
     <div class="card" style="margin-top:20px;">
@@ -211,6 +240,7 @@
 <div id="pickerModal2" class="modal">
   <div class="modal-content">
     <h2 id="pickerTitle2" style="color:var(--yellow);"></h2>
+    <p id="pickerSubtitle2" class="picker-subtitle"></p>
     <div id="visual-preview-modal2" class="visual-box"></div>
     <div id="refresco-area2" style="display:none; background:#222; padding:10px; border-radius:8px; margin-bottom:10px;">
         <p><strong>Refresco 2L:</strong></p>
@@ -287,10 +317,14 @@ const especialidades = [
     {n:'MAFIOSA',               i:'Champiñones, salami, tocino, rajas y queso'},
     {n:'BBQ COSTILLA',          i:'Queso, costillas de puerco y salsa BBQ'},
     {n:'PEPPERONI',             i:'Pepperoni'},
+    {n:'MARINERA ESPECIAL',     i:'Camarón, atún, mejillón, cebolla, aguacate y queso', premium:true},
+    {n:'TROPICAL',              i:'Camarón, piña y queso', premium:true},
 ];
 
 // Precio orilla por tamaño (igual que Abys pero con tarifas propias)
 const ORILLA = {chica:30, mediana:40, grande:50, familiar:60};
+// Precio especial cuando se elige Marinera Especial o Tropical dentro de un 2x1
+const PRECIO_MARISCOS = {chica:300, mediana:350, grande:450, familiar:500};
 
 let cart=[], selectedPay='Efectivo', userLocation="No enviada";
 const linkMP="https://link.mercadopago.com.mx/brotherpizza";
@@ -301,12 +335,18 @@ let cur=null, slots=[], activePizza=-1, activeHalf=1;
 // Estado picker rect
 let cur2=null;
 
+function isPremiumName(name){
+    const it = especialidades.find(e=>e.n===name);
+    return !!(it && it.premium);
+}
+
 // ── PICKER NORMAL ─────────────────────────────
 // freeOrilla: true = Paquete 1 (orilla ya incluida, sin costo)
 // noExtras:   true = Papas al horno (sin checkboxes)
-function openPicker(type, limit, allowed, price, hasRef=false, rectMode='', size='', freeOrilla=false, noExtras=false){
+// is2x1:      true = Especialidades al 2x1 (habilita Marinera/Tropical y su precio especial)
+function openPicker(type, limit, allowed, price, hasRef=false, rectMode='', size='', freeOrilla=false, noExtras=false, is2x1=false){
     cur = {type, limit, basePrice:price, hasRef, size, allowed,
-           refresco:'Sabor', cocaExtra:0, freeOrilla, noExtras};
+           refresco:'Sabor', cocaExtra:0, freeOrilla, noExtras, is2x1};
     slots = [];
     for(let i=0;i<limit;i++) slots.push({sabor1:'', sabor2:'', mitad:false, orilla:'none'});
     activePizza=0; activeHalf=1;
@@ -404,7 +444,7 @@ function startPicking(idx, half=1){
 function updatePickingLabel(){
     const lbl = document.getElementById('picking-label');
     if(activePizza<0){ lbl.style.display='none'; return; }
-    const pLabel = cur.limit>1?`Pizza ${activePizza+1}`:'Pizza';
+    const pLabel = cur.limit>1?`Pizza ${activePizza+1} de ${cur.limit}`:'Pizza';
     const hLabel = slots[activePizza].mitad?(activeHalf===1?' — ½ Sabor 1':' — ½ Sabor 2'):'';
     lbl.innerText = `Eligiendo: ${pLabel}${hLabel} — Elige un sabor de la lista`;
     lbl.style.display='block';
@@ -424,13 +464,20 @@ function setOrilla(i, val){
 
 function renderFlavorList(){
     const list = document.getElementById('flavorList');
-    const pool = cur.allowed==='ALL' ? especialidades : especialidades.filter(e=>cur.allowed.includes(e.n));
+    let pool = cur.allowed==='ALL' ? especialidades : especialidades.filter(e=>cur.allowed.includes(e.n));
+    // Marinera Especial y Tropical solo se muestran dentro de las Especialidades al 2x1
+    if(!cur.is2x1) pool = pool.filter(e=>!e.premium);
     list.innerHTML='';
     pool.forEach(e=>{
         const div=document.createElement('div');
         div.className='flavor-item';
-        div.innerHTML=`<div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>
-            <button class="flavor-btn" onclick="selectFlavor('${e.n}')">+</button>`;
+        div.innerHTML=`<div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>`;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='flavor-btn';
+        btn.textContent='+';
+        btn.addEventListener('click', ()=>selectFlavor(e.n));
+        div.appendChild(btn);
         list.appendChild(div);
     });
 }
@@ -451,6 +498,8 @@ function selectFlavor(nombre){
 function recalcTotal(){
     if(!cur) return;
     const op = ORILLA[cur.size]||0;
+    const hasPremium = cur.is2x1 && slots.some(sl=>isPremiumName(sl.sabor1)||isPremiumName(sl.sabor2));
+    const basePrice = hasPremium ? (PRECIO_MARISCOS[cur.size] ?? cur.basePrice) : cur.basePrice;
     let extras=cur.cocaExtra, parts=[];
     slots.forEach((sl,i)=>{
         const lbl=cur.limit>1?`P${i+1}: `:'';
@@ -463,7 +512,8 @@ function recalcTotal(){
             parts.push(`${lbl}Orilla ${tipo} (incluida)`);
         }
     });
-    const total=cur.basePrice+extras;
+    if(hasPremium) parts.unshift('Precio especial mariscos');
+    const total=basePrice+extras;
     document.getElementById('p-total').innerText =
         parts.length?`${parts.join(' | ')}  →  Total: $${total}`:`Total: $${total}`;
 }
@@ -480,6 +530,8 @@ function confirmOrder(){
         if(!slots[i].sabor1){ alert(`Elige el sabor de la Pizza ${i+1}`); return; }
         if(slots[i].mitad&&!slots[i].sabor2){ alert(`Elige el 2do sabor (mitad) de la Pizza ${i+1}`); return; }
     }
+    const hasPremium = cur.is2x1 && slots.some(sl=>isPremiumName(sl.sabor1)||isPremiumName(sl.sabor2));
+    const basePrice = hasPremium ? (PRECIO_MARISCOS[cur.size] ?? cur.basePrice) : cur.basePrice;
     let flavors=[], extras=cur.cocaExtra;
     slots.forEach((sl,i)=>{
         const lbl=cur.limit>1?`Pizza ${i+1}: `:'';
@@ -494,30 +546,46 @@ function confirmOrder(){
         }
         flavors.push(desc);
     });
-    cart.push({type:cur.type, flavors, price:cur.basePrice+extras, hasRef:cur.hasRef, refresco:cur.refresco});
+    if(hasPremium) flavors.push('* Precio especial mariscos aplicado');
+    cart.push({type:cur.type, flavors, price:basePrice+extras, hasRef:cur.hasRef, refresco:cur.refresco});
     closeModal(); updateStats();
 }
 
 function closeModal(){ document.getElementById('pickerModal').style.display='none'; }
 
 // ── PICKER RECT (original intacto) ────────────
-function openPickerRect(type, limit, price, hasRef){
+// category: subtítulo mostrado en el modal (RECTANGULAR · 4 SABORES, CUADRADA · 4 SABORES, CORAZÓN · 1 PIZZA, etc.)
+function openPickerRect(type, limit, price, hasRef, category='', shape='rect'){
     cur2 = {type, limit, basePrice:price, hasRef, flavors:[], refresco:'Sabor', cocaExtra:0};
     document.getElementById('pickerTitle2').innerText = type;
+    const sub = document.getElementById('pickerSubtitle2');
+    sub.innerText = category;
+    sub.style.display = category ? 'block' : 'none';
     document.getElementById('refresco-area2').style.display = hasRef?'block':'none';
     document.getElementById('sel-refresco2').value = 'Sabor';
 
     const vBox = document.getElementById('visual-preview-modal2');
-    vBox.style.gridTemplateColumns = `repeat(${limit},1fr)`;
+    vBox.classList.toggle('rect-outer', shape==='rect');
+    vBox.classList.toggle('square-outer', shape==='square');
+    // Todas las formas (excepto corazón con 1 pizza) usan 2 columnas → cuadrícula 2x2
+    vBox.style.gridTemplateColumns = `repeat(${shape==='heart' ? Math.min(limit,2) : 2},1fr)`;
     vBox.innerHTML='';
-    for(let i=0;i<limit;i++) vBox.innerHTML+=`<div class="box-cell" id="rv-${i}">Sabor ${i+1}</div>`;
+    for(let i=0;i<limit;i++) vBox.innerHTML+=`<div class="box-cell shape-${shape}" id="rv-${i}">Sabor ${i+1}</div>`;
 
     const list = document.getElementById('flavorList2');
     list.innerHTML='';
-    especialidades.forEach(e=>{
-        list.innerHTML+=`<div class="flavor-item">
-            <div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>
-            <button class="flavor-btn" onclick="pickRect('${e.n}')">+</button></div>`;
+    // Marinera Especial y Tropical no aplican a rectangulares/cuadrada/corazón
+    especialidades.filter(e=>!e.premium).forEach(e=>{
+        const div=document.createElement('div');
+        div.className='flavor-item';
+        div.innerHTML=`<div><strong>${e.n}</strong><br><small style="color:#888;">${e.i}</small></div>`;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='flavor-btn';
+        btn.textContent='+';
+        btn.addEventListener('click', ()=>pickRect(e.n));
+        div.appendChild(btn);
+        list.appendChild(div);
     });
     document.getElementById('pickerModal2').style.display='block';
 }
