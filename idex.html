@@ -255,7 +255,7 @@
         <p><strong>Refresco 2L:</strong></p>
         <select id="sel-refresco2" onchange="updateCocaExtra2()">
             <option value="Sabor">Sabor (Manzanita, Jarrito, etc.)</option>
-            <option value="Coca">Coca Cola (+ $20.00)</option>
+            <option value="Coca">Coca Cola (+ $30.00)</option>
         </select>
     </div>
     <div id="flavorList2" style="max-height:300px; overflow-y:auto; background:#000;"></div>
@@ -374,6 +374,7 @@ function renderVisor(){
     const extRow = document.getElementById('extras-row');
     const op     = ORILLA[cur.size]||0;
     const showExtras  = !cur.noExtras && cur.size !== '';
+    const allowMitad  = cur.size !== 'chica';
     const freeOrilla  = cur.freeOrilla;
 
     vBox.style.gridTemplateColumns  = `repeat(${cur.limit}, minmax(0,1fr))`;
@@ -419,12 +420,13 @@ function renderVisor(){
                 : `<span class="chk-price">+$${op}</span>`;
 
             col.innerHTML = `
+                ${allowMitad ? `
                 <div class="chk-row">
                     <input type="checkbox" id="chk-m-${i}" ${sl.mitad?'checked':''} onchange="toggleMitad(${i})"
                         style="width:16px;height:16px;margin:0;flex-shrink:0;accent-color:var(--red);cursor:pointer;">
                     <label for="chk-m-${i}">Mitad y mitad</label>
                     <span class="chk-price">+$0</span>
-                </div>
+                </div>` : ''}
                 <div class="chk-row" style="cursor:pointer;" onclick="setOrilla(${i}, slots[${i}].orilla==='crema' ? 'none' : 'crema')">
                     <span style="width:16px;height:16px;border-radius:50%;border:2px solid ${sl.orilla==='crema'?'var(--red)':'#666'};
                         background:${sl.orilla==='crema'?'var(--red)':'transparent'};flex-shrink:0;display:inline-block;"></span>
@@ -529,7 +531,7 @@ function recalcTotal(){
 
 function updateCocaExtra(){
     const v = document.getElementById('sel-refresco').value;
-    cur.refresco=v; cur.cocaExtra=v==='Coca'?20:0;
+    cur.refresco=v; cur.cocaExtra=v==='Coca'?30:0;
     recalcTotal();
 }
 
@@ -608,7 +610,7 @@ function pickRect(n){
 }
 function updateCocaExtra2(){
     const v=document.getElementById('sel-refresco2').value;
-    cur2.refresco=v; cur2.cocaExtra=v==='Coca'?20:0;
+    cur2.refresco=v; cur2.cocaExtra=v==='Coca'?30:0;
 }
 function confirmOrder2(){
     if(cur2.flavors.length<cur2.limit){alert("Elige todos los sabores");return;}
